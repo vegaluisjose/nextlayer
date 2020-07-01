@@ -1,16 +1,27 @@
-use std::os::raw::c_int;
+use std::ffi::CString;
+use std::os::raw::{c_void, c_char};
 use libloading::{Library, Symbol};
 
-type CCAdd = fn(c_int, c_int) -> c_int;
+#[repr(C)]
+pub struct XsimInfo {
+    log_file: *const c_char,
+    wdb_file: *const c_char,
+}
 
-#[no_mangle]
-pub extern fn wrapper_add(a: i32, b: i32) -> i32 {
-    let lib = Library::new("lib/libadd.so")
-        .expect("Error: could not load shared lib");
-    unsafe {
-        let cc_add: Symbol<CCAdd> = lib
-            .get(b"cc_add")
-            .expect("Error: could not find cc_add function");
-        cc_add(a, b)
+type XsimOpen = fn(*const XsimInfo) -> *mut c_void;
+
+pub struct Xsim {
+    tb_handle: *mut c_void,
+}
+
+impl Xsim {
+    pub fn new() -> Xsim {
+        let tb_lib = Library::new("xsim/xsim.dir/work.testbench/xsimk.so").expect("Error: could not load testbench lib");
+        let path = CString::new("").expect("Error: specifying path"); // empty for now
+        unsafe {
+            let xsim_info = XsimInfo{ log_file: path.as_ptr(), wdb_file: path.as_ptr() };
+            let xsim_open: Symbol<XsimOpen> = tb_lib.get(b"xsi_open").expect("Error: could not find xsi_open");
+            Xsim { tb_handle: xsim_open(&xsim_info) }
+        }
     }
 }
