@@ -6,7 +6,4 @@ sim_lib = path.join(cur_dir, "target/release/liblastlayer.so")
 
 lib = CDLL(sim_lib)
 
-lib.wrapper_add.restype = c_int
-lib.wrapper_add.argtypes = [c_int, c_int]
-
-print("wrapper:", lib.wrapper_add(3, 4))
+lib.run_xsim()

@@ -1,55 +1,82 @@
 use libloading::{Library, Symbol};
 use std::ffi::CString;
-use std::os::raw::{c_char, c_void};
-use std::path::Path;
-use std::collections::HashMap;
+use std::os::raw::{c_char, c_void, c_int, c_longlong};
 
 #[repr(C)]
-pub struct XsimInfo {
+pub struct XsiInfo {
     log_file: *const c_char,
     wdb_file: *const c_char,
 }
 
-type XsimOpen = fn(*const XsimInfo) -> *mut c_void;
-type XsimGetPortNumber = fn(*mut c_void, *const c_char) -> i32;
-
-pub struct Xsim {
-    sim_lib: Library,
-    design_handle: *mut c_void,
-    port_map: HashMap<String, i32>,
+#[repr(C)]
+pub struct XsiValue {
+    a: c_int,
+    b: c_int,
 }
 
-impl Xsim {
-    pub fn new() -> Xsim {
-        let design_lib = Library::new("xsim/xsim.dir/work.testbench/xsimk.so")
-            .expect("Error: could not load design lib");
-        let path = CString::new("").expect("Error: specifying path"); // empty for now
-        let lnx64_path = Path::new("/tools/Xilinx/Vivado/2020.1/lib/lnx64.o");
-        unsafe {
-            let xsim_info = XsimInfo {
-                log_file: path.as_ptr(),
-                wdb_file: path.as_ptr(),
-            };
-            let xsim_open: Symbol<XsimOpen> = design_lib
-                .get(b"xsi_open")
-                .expect("Error: could not find xsi_open");
-            Xsim {
-                sim_lib: Library::new(lnx64_path.join("librdi_simulator_kernel.so"))
-                    .expect("Error: could not load sim lib"),
-                design_handle: xsim_open(&xsim_info),
-                port_map: HashMap::new(),
-            }
-        }
-    }
+type XsiHandle = *mut c_void;
+type XsiOpen = fn(*const XsiInfo) -> XsiHandle;
+type XsiGetPortNumber = fn(XsiHandle, *const c_char) -> c_int;
+type XsiPutValue = fn(XsiHandle, c_int, *const XsiValue) -> ();
+type XsiGetValue = fn(XsiHandle, c_int, *const XsiValue) -> c_int;
+type XsiRun = fn(XsiHandle, c_longlong) -> ();
+type XsiClose = fn(XsiHandle) -> ();
 
-    pub fn create_port(&mut self, name: &str) {
-        let port = CString::new(name).expect("Error: converting port name to CString");
-        unsafe {
-            let xsim_get_port_number: Symbol<XsimGetPortNumber> = self.sim_lib
-                .get(b"xsi_get_port_name")
-                .expect("Error: could not find xsi_get_port_name");
-            let id = xsim_get_port_number(self.design_handle, port.as_ptr());
-            self.port_map.insert(name.to_string(), id);
+#[no_mangle]
+pub extern fn run_xsim() {
+    println!("Running...");
+    let design_lib = Library::new("xsim/xsim.dir/work.testbench/xsimk.so")
+            .expect("Error: could not load design lib");
+    let sim_lib = Library::new("/tools/Xilinx/Vivado/2020.1/lib/lnx64.o/librdi_simulator_kernel.so")
+            .expect("Error: could not load sim lib");
+    let log_file = CString::new("").expect("Error: specifying path"); // empty for now
+    let wdb_file = CString::new("").expect("Error: specifying path"); // empty for now
+    let clock_name = CString::new("clock").expect("Error: specifying clock name");
+    let reset_name = CString::new("reset").expect("Error: specifying reset name");
+    let count_name = CString::new("count").expect("Error: specifying count name");
+    let info = XsiInfo {
+        log_file: log_file.as_ptr(),
+        wdb_file: wdb_file.as_ptr(),
+    };
+    let one = XsiValue { a: 1, b: 0 };
+    let zero = XsiValue { a: 0, b: 0 };
+    let mut val = XsiValue { a: 0, b: 0 };
+    unsafe {
+        let xsi_open: Symbol<XsiOpen> = design_lib.get(b"xsi_open").expect("Error: could not find xsi_open");
+        let design_handle: XsiHandle = xsi_open(&info);
+        let xsi_get_port_number: Symbol<XsiGetPortNumber> = sim_lib.get(b"xsi_get_port_number").expect("Error: could not find xsi_get_port_number");
+        let xsi_put_value: Symbol<XsiPutValue> = sim_lib.get(b"xsi_put_value").expect("Error: could not find xsi_put_value");
+        let xsi_get_value: Symbol<XsiGetValue> = sim_lib.get(b"xsi_get_value").expect("Error: could not find xsi_get_value");
+        let xsi_run: Symbol<XsiRun> = sim_lib.get(b"xsi_run").expect("Error: could not find xsi_run");
+        let xsi_close: Symbol<XsiClose> = sim_lib.get(b"xsi_close").expect("Error: could not find xsi_close");
+
+        let clock = xsi_get_port_number(design_handle, clock_name.as_ptr());
+        let reset = xsi_get_port_number(design_handle, reset_name.as_ptr());
+        let count = xsi_get_port_number(design_handle, count_name.as_ptr());
+
+        println!("clock id:{}", clock);
+        println!("reset id:{}", reset);
+        println!("count id:{}", count);
+
+        for _ in 0..10 {
+            xsi_put_value(design_handle, reset.clone(), &one);
+            xsi_put_value(design_handle, clock.clone(), &zero);
+            xsi_run(design_handle, 10);
+            xsi_put_value(design_handle, clock.clone(), &one);
+            xsi_run(design_handle, 10);
         }
+        xsi_put_value(design_handle, reset.clone(), &zero);
+
+        for _ in 0..10 {
+            xsi_put_value(design_handle, clock.clone(), &zero);
+            xsi_run(design_handle, 10);
+            xsi_put_value(design_handle, clock.clone(), &one);
+            xsi_run(design_handle, 10);
+            xsi_get_value(design_handle, count.clone(), &mut val);
+            println!("count:{}", val.a);
+        }
+
+        xsi_close(design_handle);
+        println!("End...");
     }
 }
