@@ -18,7 +18,7 @@ type XsiClose = fn(XsiHandle) -> ();
 
 fn main() {
     println!("Running...");
-    let design_lib = Library::new("/home/vega/nextlayer/xsim/xsim.dir/work.testbench/xsimk.so")
+    let design_lib = Library::new("xsim/xsim.dir/work.testbench/xsimk.so")
             .expect("Error: could not load design lib");
     let sim_lib = Library::new("/tools/Xilinx/Vivado/2020.1/lib/lnx64.o/librdi_simulator_kernel.so")
             .expect("Error: could not load sim lib");
