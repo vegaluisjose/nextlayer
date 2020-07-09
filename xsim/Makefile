@@ -1,7 +1,7 @@
 default: xvlog xelab
 
 xvlog:
-	xvlog --sv --incr --relax testbench.v
+	xvlog --sv --incr --relax testbench.v adder.v
 
 xelab:
 	xelab --timescale 1ps/1ps -O3 -dll testbench
