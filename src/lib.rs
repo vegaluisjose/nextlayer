@@ -124,7 +124,7 @@ impl Xsi {
         XsiValue::to_i32(value)
     }
 
-    pub fn eval(&mut self) {
+    pub fn eval(&self) {
         // eval 10 time-units, no need to expose this?
         (self.table.run)(self.handle, 10 as c_longlong);
     }
