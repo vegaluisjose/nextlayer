@@ -1,8 +1,10 @@
-use libloading::{Library, Symbol};
 use libloading::os::unix::Symbol as RawSymbol;
-use std::ffi::CString;
-use std::os::raw::{c_char, c_void, c_int, c_longlong};
+use libloading::{Library, Symbol};
 use std::collections::HashMap;
+use std::env;
+use std::ffi::CString;
+use std::os::raw::{c_char, c_int, c_longlong, c_void};
+use std::path::Path;
 
 #[repr(C)]
 struct XsiInfo {
@@ -18,7 +20,10 @@ struct XsiValue {
 
 impl XsiValue {
     pub fn from_i32(input: i32) -> XsiValue {
-        XsiValue { a: input as c_int, b: 0 }
+        XsiValue {
+            a: input as c_int,
+            b: 0,
+        }
     }
 
     pub fn to_i32(input: XsiValue) -> i32 {
@@ -45,15 +50,18 @@ struct XsiTable {
 
 impl XsiTable {
     pub unsafe fn new(lib: &Library) -> XsiTable {
-        let xsi_get_port_name: Symbol<XsiGetPortNumber> = lib.get(b"xsi_get_port_number")
-                .expect("Error: could not find xsi_get_port_number");
-        let xsi_put_value: Symbol<XsiPutValue> = lib.get(b"xsi_put_value")
+        let xsi_get_port_name: Symbol<XsiGetPortNumber> = lib
+            .get(b"xsi_get_port_number")
+            .expect("Error: could not find xsi_get_port_number");
+        let xsi_put_value: Symbol<XsiPutValue> = lib
+            .get(b"xsi_put_value")
             .expect("Error: could not find xsi_put_value");
-        let xsi_get_value: Symbol<XsiGetValue> = lib.get(b"xsi_get_value")
+        let xsi_get_value: Symbol<XsiGetValue> = lib
+            .get(b"xsi_get_value")
             .expect("Error: could not find xsi_get_value");
-        let xsi_run: Symbol<XsiRun> = lib.get(b"xsi_run")
-            .expect("Error: could not find xsi_run");
-        let xsi_close: Symbol<XsiClose> = lib.get(b"xsi_close")
+        let xsi_run: Symbol<XsiRun> = lib.get(b"xsi_run").expect("Error: could not find xsi_run");
+        let xsi_close: Symbol<XsiClose> = lib
+            .get(b"xsi_close")
             .expect("Error: could not find xsi_close");
         XsiTable {
             get_port_name: xsi_get_port_name.into_raw(),
@@ -77,11 +85,13 @@ pub struct Xsi {
 }
 
 impl Xsi {
-    pub fn new() -> Xsi {
-        let design_lib = Library::new("xsim/xsim.dir/work.testbench/xsimk.so")
-            .expect("Error: could not load design lib");
-        let xsi_lib = Library::new("/tools/Xilinx/Vivado/2020.1/lib/lnx64.o/librdi_simulator_kernel.so")
-            .expect("Error: could not load sim lib");
+    pub fn new(design_lib_path: &Path) -> Xsi {
+        let env_var = env::var("XILINX_VIVADO")
+            .expect("Error: Vivado not found, have you sourced settings64.sh?");
+        let xilinx_path = Path::new(&env_var);
+        let rdi_path = xilinx_path.join("lib/lnx64.o/librdi_simulator_kernel.so");
+        let design_lib = Library::new(design_lib_path).expect("Error: could not load design lib");
+        let xsi_lib = Library::new(&rdi_path).expect("Error: could not load sim lib");
         let log_file = CString::new("").expect("Error: specifying path"); // empty for now
         let wdb_file = CString::new("").expect("Error: specifying path"); // empty for now
         let info = XsiInfo {
@@ -89,7 +99,8 @@ impl Xsi {
             wdb_file: wdb_file.as_ptr(),
         };
         unsafe {
-            let xsi_open: Symbol<XsiOpen> = design_lib.get(b"xsi_open")
+            let xsi_open: Symbol<XsiOpen> = design_lib
+                .get(b"xsi_open")
                 .expect("Error: could not find xsi_open");
             let handle = xsi_open(&info);
             let table = XsiTable::new(&xsi_lib);

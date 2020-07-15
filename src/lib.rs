@@ -1,11 +1,13 @@
 pub mod backend;
 
 use crate::backend::xsim::Xsim;
+use std::path::Path;
 
 #[no_mangle]
-pub extern fn run_xsim() {
+pub extern "C" fn run_xsim() {
     println!("Running...");
-    let mut sim = Xsim::new();
+    let design_lib_path = Path::new("xsim/xsim.dir/work.testbench/xsimk.so");
+    let mut sim = Xsim::new(&design_lib_path);
     // reset for 10 cycles
     sim.poke("mask", 0);
     for _ in 0..10 {
