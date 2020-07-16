@@ -23,11 +23,19 @@ pub extern "C" fn run_xsim() {
     sim.poke("id", 0);
     sim.poke("in", 3);
     sim.eval();
-    // write b
-    sim.poke("opcode", 1);
-    sim.poke("id", 1);
-    sim.poke("in", 4);
     sim.eval();
+    // write mem
+    sim.poke("opcode", 3);
+    sim.poke("id", 0);
+    sim.poke("in", 9);
+    sim.poke("addr", 4);
+    sim.eval();
+    // read mem
+    sim.poke("opcode", 4);
+    sim.poke("id", 0);
+    sim.poke("addr", 4);
+    sim.eval();
+    println!("read-back from mem:{}", sim.peek("out"));
     // run for 1 cycle
     for _ in 0..1 {
         sim.poke("clock", 1);
@@ -37,7 +45,7 @@ pub extern "C" fn run_xsim() {
     }
     // read y
     sim.poke("opcode", 2);
-    sim.poke("id", 2);
+    sim.poke("id", 1);
     sim.eval();
     println!("adder result:{}", sim.peek("out"));
     println!("Finishing...");
