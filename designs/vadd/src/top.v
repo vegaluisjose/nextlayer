@@ -4,7 +4,7 @@ module top (
 );
 
     localparam integer AXI_ID_WIDTH = 1;
-    localparam integer AXI_ADDR_WIDTH = 64;
+    localparam integer AXI_ADDR_WIDTH = 16;
     localparam integer AXI_DATA_WIDTH = 32;
     localparam integer AXI_STRB_WIDTH = (AXI_DATA_WIDTH/8);
 
@@ -13,7 +13,7 @@ module top (
     wire [7:0]                 axi_awlen;
     wire [2:0]                 axi_awsize;
     wire [1:0]                 axi_awburst;
-    wire                       axi_awlock;
+    wire [1:0]                 axi_awlock;
     wire [3:0]                 axi_awcache;
     wire [2:0]                 axi_awprot;
     wire                       axi_awvalid;
@@ -32,7 +32,7 @@ module top (
     wire [7:0]                 axi_arlen;
     wire [2:0]                 axi_arsize;
     wire [1:0]                 axi_arburst;
-    wire                       axi_arlock;
+    wire [1:0]                 axi_arlock;
     wire [3:0]                 axi_arcache;
     wire [2:0]                 axi_arprot;
     wire                       axi_arvalid;
@@ -125,7 +125,7 @@ module top (
         .s_axi_awlen             (axi_awlen),
         .s_axi_awsize            (axi_awsize),
         .s_axi_awburst           (axi_awburst),
-        .s_axi_awlock            (axi_awlock),
+        .s_axi_awlock            (axi_awlock[0]),
         .s_axi_awcache           (axi_awcache),
         .s_axi_awprot            (axi_awprot),
         .s_axi_awvalid           (axi_awvalid),
@@ -144,7 +144,7 @@ module top (
         .s_axi_arlen             (axi_arlen),
         .s_axi_arsize            (axi_arsize),
         .s_axi_arburst           (axi_arburst),
-        .s_axi_arlock            (axi_arlock),
+        .s_axi_arlock            (axi_arlock[0]),
         .s_axi_arcache           (axi_arcache),
         .s_axi_arprot            (axi_arprot),
         .s_axi_arvalid           (axi_arvalid),

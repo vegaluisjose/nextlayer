@@ -1,6 +1,6 @@
 export LD_LIBRARY_PATH=$(XILINX_VIVADO)/lib/lnx64.o
 
-TARGET = add
+TARGET = vadd
 TARGET_DIR = $(abspath .)/designs/$(TARGET)
 
 default:

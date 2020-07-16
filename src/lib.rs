@@ -18,11 +18,11 @@ pub extern "C" fn run_add() {
         sim.eval();
     }
     sim.poke("reset", 0);
+    sim.eval();
     // write a
     sim.poke("opcode", 1);
     sim.poke("id", 0);
     sim.poke("in", 3);
-    sim.eval();
     sim.eval();
     // write mem
     sim.poke("opcode", 3);
@@ -49,4 +49,76 @@ pub extern "C" fn run_add() {
     sim.eval();
     println!("adder result:{}", sim.peek("out"));
     println!("Finishing add...");
+}
+
+#[no_mangle]
+pub extern "C" fn run_vadd() {
+    println!("Running vadd...");
+    let design_lib_path = Path::new("designs/vadd/xsim.dir/work.testbench/xsimk.so");
+    let mut sim = Xsim::new(&design_lib_path);
+    // reset for 10 cycles
+    sim.poke("mask", 0);
+    for _ in 0..10 {
+        sim.poke("reset", 1);
+        sim.poke("clock", 1);
+        sim.eval();
+        sim.poke("clock", 0);
+        sim.eval();
+    }
+    sim.poke("reset", 0);
+    sim.eval();
+    // write mem
+    for i in 0..8 {
+        sim.poke("opcode", 3);
+        sim.poke("id", 0);
+        sim.poke("in", i);
+        sim.poke("addr", i);
+        sim.eval();
+    }
+    // write a
+    sim.poke("opcode", 1);
+    sim.poke("id", 2);
+    sim.poke("in", 0);
+    sim.eval();
+    // write b
+    sim.poke("opcode", 1);
+    sim.poke("id", 3);
+    sim.poke("in", 4);
+    sim.eval();
+    // write c
+    sim.poke("opcode", 1);
+    sim.poke("id", 4);
+    sim.poke("in", 8);
+    sim.eval();
+    // write length
+    sim.poke("opcode", 1);
+    sim.poke("id", 5);
+    sim.poke("in", 4);
+    sim.eval();
+    // write start
+    sim.poke("opcode", 1);
+    sim.poke("id", 0);
+    sim.poke("in", 1);
+    sim.eval();
+    // run for 10 cycle
+    for _ in 0..100 {
+        sim.poke("clock", 1);
+        sim.eval();
+        sim.poke("clock", 0);
+        sim.eval();
+    }
+    // read done
+    sim.poke("opcode", 2);
+    sim.poke("id", 1);
+    sim.eval();
+    println!("done:{}", sim.peek("out"));
+    // read mem
+    for i in 0..12 {
+        sim.poke("opcode", 4);
+        sim.poke("id", 0);
+        sim.poke("addr", i);
+        sim.eval();
+        println!("mem[{}]:{}", i, sim.peek("out"));
+    }
+    println!("Finishing vadd...");
 }
