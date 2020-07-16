@@ -1,11 +1,14 @@
 export LD_LIBRARY_PATH=$(XILINX_VIVADO)/lib/lnx64.o
 
+TARGET = add
+TARGET_DIR = $(abspath .)/designs/$(TARGET)
+
 default:
-	make -C xsim
-	ln -sf xsim/xsim.dir .
+	make -C $(TARGET_DIR)
+	ln -sf $(TARGET_DIR)/xsim.dir .
 	cargo build --release
-	python3 run.py
+	python3 python/$(TARGET).py
 
 clean:
-	make -C xsim clean
+	make -C $(TARGET_DIR) clean
 	rm xsim.dir

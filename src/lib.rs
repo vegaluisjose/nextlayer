@@ -4,9 +4,9 @@ use crate::backend::xsim::Xsim;
 use std::path::Path;
 
 #[no_mangle]
-pub extern "C" fn run_xsim() {
-    println!("Running...");
-    let design_lib_path = Path::new("xsim/xsim.dir/work.testbench/xsimk.so");
+pub extern "C" fn run_add() {
+    println!("Running add...");
+    let design_lib_path = Path::new("designs/add/xsim.dir/work.testbench/xsimk.so");
     let mut sim = Xsim::new(&design_lib_path);
     // reset for 10 cycles
     sim.poke("mask", 0);
@@ -48,5 +48,5 @@ pub extern "C" fn run_xsim() {
     sim.poke("id", 1);
     sim.eval();
     println!("adder result:{}", sim.peek("out"));
-    println!("Finishing...");
+    println!("Finishing add...");
 }

@@ -1,3 +1,7 @@
+// this adder take one operand from a register(a)
+// and another from memory(mem). These two storage
+// resources are accessed from external langs through
+// FFI.
 module adder(input clock, input reset);
 
     wire [7:0] b;
