@@ -4,7 +4,7 @@ module top (
 );
 
     localparam integer AXI_ID_WIDTH = 1;
-    localparam integer AXI_ADDR_WIDTH = 16;
+    localparam integer AXI_ADDR_WIDTH = 64;
     localparam integer AXI_DATA_WIDTH = 32;
     localparam integer AXI_STRB_WIDTH = (AXI_DATA_WIDTH/8);
 
@@ -94,34 +94,34 @@ module top (
         // no need for connecting control
         // since we can write directly to
         // those mmio registers
-        .s_axi_control_AWVALID   (),
+        .s_axi_control_AWVALID   ('d0),
         .s_axi_control_AWREADY   (),
-        .s_axi_control_AWADDR    (),
-        .s_axi_control_WVALID    (),
+        .s_axi_control_AWADDR    ('d0),
+        .s_axi_control_WVALID    ('d0),
         .s_axi_control_WREADY    (),
-        .s_axi_control_WDATA     (),
-        .s_axi_control_WSTRB     (),
-        .s_axi_control_ARVALID   (),
+        .s_axi_control_WDATA     ('d0),
+        .s_axi_control_WSTRB     ('d0),
+        .s_axi_control_ARVALID   ('d0),
         .s_axi_control_ARREADY   (),
-        .s_axi_control_ARADDR    (),
+        .s_axi_control_ARADDR    ('d0),
         .s_axi_control_RVALID    (),
-        .s_axi_control_RREADY    (),
+        .s_axi_control_RREADY    ('d0),
         .s_axi_control_RDATA     (),
         .s_axi_control_RRESP     (),
         .s_axi_control_BVALID    (),
-        .s_axi_control_BREADY    (),
+        .s_axi_control_BREADY    ('d0),
         .s_axi_control_BRESP     ()
     );
 
     axi_ram # (
          .DATA_WIDTH(AXI_DATA_WIDTH),
-         .ADDR_WIDTH(AXI_ADDR_WIDTH),
+         .ADDR_WIDTH(AXI_ADDR_WIDTH/4), // 2^64 leads to overflow
          .ID_WIDTH(AXI_ID_WIDTH)
     ) ram (
         .clk                     (clock),
         .rst                     (reset),
         .s_axi_awid              (axi_awid),
-        .s_axi_awaddr            (axi_awaddr),
+        .s_axi_awaddr            (axi_awaddr[AXI_ADDR_WIDTH/4-1:0]),
         .s_axi_awlen             (axi_awlen),
         .s_axi_awsize            (axi_awsize),
         .s_axi_awburst           (axi_awburst),
@@ -140,7 +140,7 @@ module top (
         .s_axi_bvalid            (axi_bvalid),
         .s_axi_bready            (axi_bready),
         .s_axi_arid              (axi_arid),
-        .s_axi_araddr            (axi_araddr),
+        .s_axi_araddr            (axi_araddr[AXI_ADDR_WIDTH/4-1:0]),
         .s_axi_arlen             (axi_arlen),
         .s_axi_arsize            (axi_arsize),
         .s_axi_arburst           (axi_arburst),
