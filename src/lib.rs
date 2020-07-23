@@ -78,17 +78,17 @@ pub extern "C" fn run_vadd() {
     // write a
     sim.poke("opcode", 1);
     sim.poke("id", 2);
-    sim.poke("in", 0);
+    sim.poke("in", 0); // first vector starts at 0 address nothing to do here
     sim.eval();
     // write b
     sim.poke("opcode", 1);
     sim.poke("id", 3);
-    sim.poke("in", 4);
+    sim.poke("in", 16); // address in bytes, this vector starts at index*num_bytes_per_word, 4x4
     sim.eval();
     // write c
     sim.poke("opcode", 1);
     sim.poke("id", 4);
-    sim.poke("in", 8);
+    sim.poke("in", 32);  // result vector starts at 8x4
     sim.eval();
     // write length
     sim.poke("opcode", 1);
@@ -100,8 +100,8 @@ pub extern "C" fn run_vadd() {
     sim.poke("id", 0);
     sim.poke("in", 1);
     sim.eval();
-    // run for 10 cycle
-    for _ in 0..100 {
+    // run for 1000 cycle
+    for _ in 0..1000 {
         sim.poke("clock", 1);
         sim.eval();
         sim.poke("clock", 0);
