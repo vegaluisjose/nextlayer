@@ -1,55 +1,10 @@
-use libloading::os::unix::Symbol as RawSymbol;
+use crate::backend::xsim::xsi::*;
 use libloading::{Library, Symbol};
 use std::collections::HashMap;
-use std::convert::From;
 use std::env;
 use std::ffi::CString;
-use std::os::raw::{c_char, c_int, c_longlong, c_void};
+use std::os::raw::{c_int, c_longlong};
 use std::path::Path;
-
-#[repr(C)]
-struct XsiInfo {
-    log_file: *const c_char,
-    wdb_file: *const c_char,
-}
-
-#[repr(C)]
-struct XsiValue {
-    a: c_int,
-    b: c_int,
-}
-
-impl From<i32> for XsiValue {
-    fn from(input: i32) -> Self {
-        XsiValue {
-            a: input as c_int,
-            b: 0,
-        }
-    }
-}
-
-impl From<XsiValue> for i32 {
-    fn from(input: XsiValue) -> Self {
-        input.a as i32
-    }
-}
-
-type XsiHandle = *mut c_void;
-type XsiOpen = fn(*const XsiInfo) -> XsiHandle;
-type XsiGetPortNumber = fn(XsiHandle, *const c_char) -> c_int;
-type XsiPutValue = fn(XsiHandle, c_int, *const XsiValue) -> ();
-type XsiGetValue = fn(XsiHandle, c_int, *const XsiValue) -> c_int;
-type XsiRun = fn(XsiHandle, c_longlong) -> ();
-type XsiClose = fn(XsiHandle) -> ();
-
-#[derive(Clone, Debug)]
-struct XsiTable {
-    get_port_name: RawSymbol<XsiGetPortNumber>,
-    put_value: RawSymbol<XsiPutValue>,
-    get_value: RawSymbol<XsiGetValue>,
-    run: RawSymbol<XsiRun>,
-    close: RawSymbol<XsiClose>,
-}
 
 impl XsiTable {
     pub unsafe fn new(lib: &Library) -> XsiTable {
@@ -74,17 +29,6 @@ impl XsiTable {
             close: xsi_close.into_raw(),
         }
     }
-}
-
-pub type Xsim = Xsi;
-
-#[derive(Debug)]
-pub struct Xsi {
-    design_lib: Library,
-    xsi_lib: Library,
-    handle: XsiHandle,
-    table: XsiTable,
-    ports: HashMap<String, c_int>,
 }
 
 impl Xsi {
