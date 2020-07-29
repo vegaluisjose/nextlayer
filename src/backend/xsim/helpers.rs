@@ -89,10 +89,8 @@ impl Xsi {
         // eval 10 time-units, no need to expose this?
         (self.table.run)(self.handle, 10 as c_longlong);
     }
-}
 
-impl Drop for Xsi {
-    fn drop(&mut self) {
+    pub fn free(&mut self) {
         (self.table.close)(self.handle);
     }
 }

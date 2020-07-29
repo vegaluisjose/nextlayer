@@ -48,6 +48,7 @@ pub extern "C" fn run_add() {
     sim.poke("id", 1);
     sim.eval();
     println!("adder result:{}", sim.peek("out"));
+    sim.free();
     println!("Finishing add...");
 }
 
@@ -120,5 +121,6 @@ pub extern "C" fn run_vadd() {
         sim.eval();
         println!("mem[{}]:{}", i, sim.peek("out"));
     }
+    sim.free();
     println!("Finishing vadd...");
 }
