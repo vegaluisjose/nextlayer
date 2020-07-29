@@ -12,3 +12,9 @@ default:
 clean:
 	make -C $(TARGET_DIR) clean
 	rm xsim.dir
+
+.PHONY: lint
+lint:
+	cargo fmt -- --check
+	cargo clippy
+	cargo build
