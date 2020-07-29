@@ -1,6 +1,7 @@
 use libloading::os::unix::Symbol as RawSymbol;
 use libloading::{Library, Symbol};
 use std::collections::HashMap;
+use std::convert::From;
 use std::env;
 use std::ffi::CString;
 use std::os::raw::{c_char, c_int, c_longlong, c_void};
@@ -18,15 +19,17 @@ struct XsiValue {
     b: c_int,
 }
 
-impl XsiValue {
-    pub fn from_i32(input: i32) -> XsiValue {
+impl From<i32> for XsiValue {
+    fn from(input: i32) -> Self {
         XsiValue {
             a: input as c_int,
             b: 0,
         }
     }
+}
 
-    pub fn to_i32(input: XsiValue) -> i32 {
+impl From<XsiValue> for i32 {
+    fn from(input: XsiValue) -> Self {
         input.a as i32
     }
 }
@@ -105,10 +108,10 @@ impl Xsi {
             let handle = xsi_open(&info);
             let table = XsiTable::new(&xsi_lib);
             Xsi {
-                design_lib: design_lib,
-                xsi_lib: xsi_lib,
-                handle: handle,
-                table: table,
+                design_lib,
+                xsi_lib,
+                handle,
+                table,
                 ports: HashMap::new(),
             }
         }
@@ -116,25 +119,26 @@ impl Xsi {
 
     fn add_port(&mut self, name: &str) -> c_int {
         if !self.ports.contains_key(name) {
-            let port_name = CString::new(name).expect(&format!("Error: specifying {} name", name));
+            let port_name =
+                CString::new(name).unwrap_or_else(|_| panic!("Error: specifying {} name", name));
             let port_id = (self.table.get_port_name)(self.handle, port_name.as_ptr());
             self.ports.insert(name.to_string(), port_id);
             port_id
         } else {
-            self.ports.get(name).unwrap().clone()
+            *self.ports.get(name).unwrap()
         }
     }
 
     pub fn poke(&mut self, name: &str, value: i32) {
         let port_id = self.add_port(name);
-        (self.table.put_value)(self.handle, port_id, &XsiValue::from_i32(value));
+        (self.table.put_value)(self.handle, port_id, &XsiValue::from(value));
     }
 
     pub fn peek(&mut self, name: &str) -> i32 {
         let port_id = self.add_port(name);
         let mut value = XsiValue { a: 0, b: 0 };
         (self.table.get_value)(self.handle, port_id, &mut value);
-        XsiValue::to_i32(value)
+        i32::from(value)
     }
 
     pub fn eval(&self) {

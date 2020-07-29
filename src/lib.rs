@@ -88,7 +88,7 @@ pub extern "C" fn run_vadd() {
     // write c
     sim.poke("opcode", 1);
     sim.poke("id", 4);
-    sim.poke("in", 32);  // result vector starts at 8x4
+    sim.poke("in", 32); // result vector starts at 8x4
     sim.eval();
     // write length
     sim.poke("opcode", 1);
