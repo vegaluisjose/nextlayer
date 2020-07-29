@@ -1,9 +1,16 @@
 export LD_LIBRARY_PATH=$(XILINX_VIVADO)/lib/lnx64.o
 
 TARGET = vadd
-TARGET_DIR = $(abspath .)/designs/$(TARGET)
+DESIGN_DIR = $(abspath .)/designs
+TARGET_DIR = $(DESIGN_DIR)/$(TARGET)
 
 default:
+	make -C $(DESIGN_DIR)/add
+	ln -sf $(DESIGN_DIR)/add/xsim.dir .
+	cargo build --release
+	python3 python/test_nextlayer.py
+
+regression:
 	make -C $(TARGET_DIR)
 	ln -sf $(TARGET_DIR)/xsim.dir .
 	cargo build --release

@@ -90,7 +90,7 @@ impl Xsi {
         (self.table.run)(self.handle, 10 as c_longlong);
     }
 
-    pub fn free(&mut self) {
+    pub fn free(&self) {
         (self.table.close)(self.handle);
     }
 }

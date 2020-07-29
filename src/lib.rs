@@ -1,7 +1,9 @@
-pub mod backend;
-
 use crate::backend::xsim::Xsim;
+use std::ffi::CStr;
+use std::os::raw::c_char;
 use std::path::Path;
+
+pub mod backend;
 
 #[no_mangle]
 pub extern "C" fn run_add() {
@@ -123,4 +125,25 @@ pub extern "C" fn run_vadd() {
     }
     sim.free();
     println!("Finishing vadd...");
+}
+
+/// # Safety
+///
+/// This function allocates xsim object, should be called before anything else
+#[no_mangle]
+pub unsafe extern "C" fn alloc(lib: *const c_char) -> *mut Xsim {
+    assert!(!lib.is_null());
+    let path_str = CStr::from_ptr(lib);
+    let path = Path::new(path_str.to_str().unwrap());
+    let boxed = Box::new(Xsim::new(&path));
+    Box::into_raw(boxed)
+}
+
+/// # Safety
+///
+/// This function deallocates xsim object, should be called after allocating
+pub unsafe extern "C" fn dealloc(handle: *mut Xsim) {
+    let xsim = handle.as_ref().unwrap();
+    xsim.free();
+    Box::from_raw(handle);
 }
