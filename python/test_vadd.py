@@ -3,6 +3,10 @@ from os import environ, getenv, path
 from driver import VaddDriver
 
 def test_vadd(nextlayer_lib, design_lib):
+    # n is vector length
+    n = 4
+    # vector size in bytes, word type is 32-bit
+    size = n*4
     # create a driver
     driver = VaddDriver(nextlayer_lib, design_lib)
     # reset accel for 10 cycles
@@ -13,11 +17,11 @@ def test_vadd(nextlayer_lib, design_lib):
     # write pointer a addr
     driver.write_reg_a(0)
     # write pointer b addr
-    driver.write_reg_b(16)
+    driver.write_reg_b(size)
     # write pointer c addr
-    driver.write_reg_c(32)
+    driver.write_reg_c(size*2)
     # write length
-    driver.write_reg_length(4)
+    driver.write_reg_length(n)
     # launch
     driver.launch()
     # cycle counter
@@ -28,9 +32,9 @@ def test_vadd(nextlayer_lib, design_lib):
         driver.run(1)
         if driver.is_finished():
             break
-    # read a, b, and c vector from mem
-    for x in range(12):
-        print("mem[{}]:{}".format(x, driver.read_mem(x)))
+    # read results
+    for x in range(n):
+        print("[{}] a:{} b:{} c:{}".format(x, driver.read_mem(x), driver.read_mem(x+n), driver.read_mem(x+n*2)))
     # print cycles
     print("total cycles:{}".format(cycles))
 
