@@ -7,10 +7,11 @@ def test_add(nextlayer_lib, design_lib):
     driver.reset(4)
     driver.write_reg_a(3)
     driver.write_mem(9, 4)
-    print("lhs:{}".format(driver.read_reg_a()))
-    print("rhs:{}".format(driver.read_mem(4)))
     driver.run(3)
-    print("result:{}".format(driver.read_reg_y()))
+    a = driver.read_reg_a()
+    b = driver.read_mem(4)
+    y = driver.read_reg_y()
+    assert (a + b) == y
 
 if __name__ == "__main__":
     cur_dir = path.dirname(path.realpath(__file__))

@@ -16,7 +16,7 @@ def test_vadd(nextlayer_lib, design_lib):
         driver.write_mem(x, x)
     # write vector b
     for x in range(n):
-        driver.write_mem(x, x+n)
+        driver.write_mem(x+3, x+n)
     # write pointer a
     driver.write_reg_a(0)
     # write pointer b
@@ -35,9 +35,12 @@ def test_vadd(nextlayer_lib, design_lib):
         driver.run(1)
         if driver.is_finished():
             break
-    # read results
+    # check results
     for x in range(n):
-        print("[{}] a:{} b:{} c:{}".format(x, driver.read_mem(x), driver.read_mem(x+n), driver.read_mem(x+n*2)))
+        a = driver.read_mem(x)
+        b = driver.read_mem(x+n)
+        c = driver.read_mem(x+n*2)
+        assert (a + b) == c
     # print cycles
     print("total cycles:{}".format(cycles))
 
