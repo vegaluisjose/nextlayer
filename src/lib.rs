@@ -167,6 +167,75 @@ pub unsafe extern "C" fn read_reg(handle: *mut Xsim, id: c_int, mask: c_int) -> 
 
 /// # Safety
 ///
+/// This function writes to memory, should be called after allocating
+#[no_mangle]
+pub unsafe extern "C" fn write_mem(
+    handle: *mut Xsim,
+    value: c_int,
+    addr: c_int,
+    id: c_int,
+    mask: c_int,
+) {
+    let xsim = &mut handle.as_mut().unwrap();
+    xsim.poke("opcode", 3);
+    xsim.poke("mask", mask as i32);
+    xsim.poke("id", id as i32);
+    xsim.poke("in", value as i32);
+    xsim.poke("addr", addr as i32);
+    xsim.eval();
+}
+
+/// # Safety
+///
+/// This function reads from memory, should be called after allocating
+#[no_mangle]
+pub unsafe extern "C" fn read_mem(handle: *mut Xsim, addr: c_int, id: c_int, mask: c_int) -> i32 {
+    let xsim = &mut handle.as_mut().unwrap();
+    xsim.poke("opcode", 4);
+    xsim.poke("mask", mask as i32);
+    xsim.poke("id", id as i32);
+    xsim.poke("addr", addr as i32);
+    xsim.eval();
+    xsim.peek("out") as i32
+}
+
+/// # Safety
+///
+/// This function asserts reset for n cycles, should be called after allocating
+#[no_mangle]
+pub unsafe extern "C" fn reset(handle: *mut Xsim, cycles: c_int) {
+    let xsim = &mut handle.as_mut().unwrap();
+    assert!(cycles > 0, "Error: cycles must be greater than zero");
+    let n = cycles as i32;
+    for _ in 0..n {
+        xsim.poke("reset", 1);
+        xsim.poke("clock", 1);
+        xsim.eval();
+        xsim.poke("clock", 0);
+        xsim.eval();
+    }
+    xsim.poke("reset", 0);
+    xsim.eval();
+}
+
+/// # Safety
+///
+/// This function runs for n cycles, should be called after allocating
+#[no_mangle]
+pub unsafe extern "C" fn run(handle: *mut Xsim, cycles: c_int) {
+    let xsim = &mut handle.as_mut().unwrap();
+    assert!(cycles > 0, "Error: cycles must be greater than zero");
+    let n = cycles as i32;
+    for _ in 0..n {
+        xsim.poke("clock", 1);
+        xsim.eval();
+        xsim.poke("clock", 0);
+        xsim.eval();
+    }
+}
+
+/// # Safety
+///
 /// This function deallocates xsim object, should be called after allocating
 #[no_mangle]
 pub unsafe extern "C" fn dealloc(handle: *mut Xsim) {
