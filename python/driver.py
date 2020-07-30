@@ -71,16 +71,10 @@ class VaddDriver:
     def run(self, cycles):
         self.lib.run(self.handle, cycles)
 
-    def write_reg_start(self, value):
-        self.lib.write_reg(self.handle, value, 0, 0)
+    def launch(self):
+        self.lib.write_reg(self.handle, 1, 0, 0)
 
-    def read_reg_start(self):
-        return self.lib.read_reg(self.handle, 0, 0)
-
-    def write_reg_done(self, value):
-        self.lib.write_reg(self.handle, value, 1, 0)
-
-    def read_reg_done(self):
+    def is_finished(self):
         return self.lib.read_reg(self.handle, 1, 0)
 
     def write_reg_a(self, value):

@@ -4,6 +4,7 @@ from driver import VaddDriver
 
 def test_vadd(nextlayer_lib, design_lib):
     driver = VaddDriver(nextlayer_lib, design_lib)
+    # reset accel for 10 cycles
     driver.reset(10)
     # write a and b vector to mem
     for x in range(8):
@@ -16,12 +17,12 @@ def test_vadd(nextlayer_lib, design_lib):
     driver.write_reg_c(32)
     # write length
     driver.write_reg_length(4)
-    # start
-    driver.write_reg_start(1)  # start
+    # launch
+    driver.launch()
     # run for 1000 cycles
     driver.run(1000)
     # check if done
-    print("done:{}".format(driver.read_reg_done()))
+    print("is_finished:{}".format(driver.is_finished()))
     # read a, b, and c vector from mem
     for x in range(12):
         print("mem[{}]:{}".format(x, driver.read_mem(x)))
