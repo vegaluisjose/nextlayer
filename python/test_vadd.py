@@ -3,6 +3,7 @@ from os import environ, getenv, path
 from driver import VaddDriver
 
 def test_vadd(nextlayer_lib, design_lib):
+    # create a driver
     driver = VaddDriver(nextlayer_lib, design_lib)
     # reset accel for 10 cycles
     driver.reset(10)
@@ -19,13 +20,19 @@ def test_vadd(nextlayer_lib, design_lib):
     driver.write_reg_length(4)
     # launch
     driver.launch()
-    # run for 1000 cycles
-    driver.run(1000)
-    # check if done
-    print("is_finished:{}".format(driver.is_finished()))
+    # cycle counter
+    cycles = 0
+    # run accel, timeout set to 1000 cycles
+    for i in range(1000):
+        cycles += 1
+        driver.run(1)
+        if driver.is_finished():
+            break
     # read a, b, and c vector from mem
     for x in range(12):
         print("mem[{}]:{}".format(x, driver.read_mem(x)))
+    # print cycles
+    print("total cycles:{}".format(cycles))
 
 if __name__ == "__main__":
     cur_dir = path.dirname(path.realpath(__file__))
