@@ -17,11 +17,11 @@ def test_vadd(nextlayer_lib, design_lib):
     # write vector b
     for x in range(n):
         driver.write_mem(x, x+n)
-    # write pointer a addr
+    # write pointer a
     driver.write_reg_a(0)
-    # write pointer b addr
+    # write pointer b
     driver.write_reg_b(size)
-    # write pointer c addr
+    # write pointer c
     driver.write_reg_c(size*2)
     # write length
     driver.write_reg_length(n)
