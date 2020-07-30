@@ -8,13 +8,7 @@ default:
 	make -C $(DESIGN_DIR)/add
 	ln -sf $(DESIGN_DIR)/add/xsim.dir .
 	cargo build --release
-	python3 python/test_nextlayer.py
-
-regression:
-	make -C $(TARGET_DIR)
-	ln -sf $(TARGET_DIR)/xsim.dir .
-	cargo build --release
-	python3 python/$(TARGET).py
+	python3 python/test_add.py
 
 clean:
 	make -C $(TARGET_DIR) clean

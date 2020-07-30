@@ -1,6 +1,6 @@
 import sys
 from os import environ, getenv, path
-from nextlayer import AddDriver
+from driver import AddDriver
 
 def test_add(nextlayer_lib, design_lib):
     driver = AddDriver(nextlayer_lib, design_lib)
