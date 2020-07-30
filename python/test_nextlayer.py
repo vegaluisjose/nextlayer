@@ -4,7 +4,9 @@ from nextlayer import NextLayer
 
 def add(nextlayer_lib):
     design_lib = "designs/add/xsim.dir/work.testbench/xsimk.so"
-    nextlayer = NextLayer(nextlayer_lib, design_lib)
+    nl = NextLayer(nextlayer_lib, design_lib)
+    nl.write_reg(3);
+    print(nl.read_reg())
 
 if __name__ == "__main__":
     cur_dir = path.dirname(path.realpath(__file__))

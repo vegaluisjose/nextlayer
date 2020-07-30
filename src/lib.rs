@@ -1,6 +1,6 @@
 use crate::backend::xsim::Xsim;
 use std::ffi::CStr;
-use std::os::raw::c_char;
+use std::os::raw::{c_char, c_int};
 use std::path::Path;
 
 pub mod backend;
@@ -141,7 +141,34 @@ pub unsafe extern "C" fn alloc(lib: *const c_char) -> *mut Xsim {
 
 /// # Safety
 ///
+/// This function writes to a register, should be called after allocating
+#[no_mangle]
+pub unsafe extern "C" fn write_reg(handle: *mut Xsim, value: c_int, id: c_int, mask: c_int) {
+    let xsim = &mut handle.as_mut().unwrap();
+    xsim.poke("opcode", 1);
+    xsim.poke("mask", mask as i32);
+    xsim.poke("id", id as i32);
+    xsim.poke("in", value as i32);
+    xsim.eval();
+}
+
+/// # Safety
+///
+/// This function reads from a register, should be called after allocating
+#[no_mangle]
+pub unsafe extern "C" fn read_reg(handle: *mut Xsim, id: c_int, mask: c_int) -> i32 {
+    let xsim = &mut handle.as_mut().unwrap();
+    xsim.poke("opcode", 2);
+    xsim.poke("mask", mask as i32);
+    xsim.poke("id", id as i32);
+    xsim.eval();
+    xsim.peek("out") as i32
+}
+
+/// # Safety
+///
 /// This function deallocates xsim object, should be called after allocating
+#[no_mangle]
 pub unsafe extern "C" fn dealloc(handle: *mut Xsim) {
     let xsim = handle.as_ref().unwrap();
     xsim.free();
