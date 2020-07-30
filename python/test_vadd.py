@@ -2,7 +2,7 @@ import sys
 from os import environ, getenv, path
 from driver import VaddDriver
 
-def test_add(nextlayer_lib, design_lib):
+def test_vadd(nextlayer_lib, design_lib):
     driver = VaddDriver(nextlayer_lib, design_lib)
     driver.reset(10)
     # write a and b vector to mem
@@ -31,4 +31,4 @@ if __name__ == "__main__":
     nextlayer_lib = path.join(cur_dir, "../target/release/libnextlayer.so")
     design_lib = path.join(cur_dir, "../designs/vadd/xsim.dir/work.testbench/xsimk.so")
     sys.path.append(cur_dir)
-    test_add(nextlayer_lib, design_lib)
+    test_vadd(nextlayer_lib, design_lib)
