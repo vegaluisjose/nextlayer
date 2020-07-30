@@ -4,16 +4,19 @@ from driver import VaddDriver
 
 def test_vadd(nextlayer_lib, design_lib):
     # n is vector length
-    n = 4
+    n = 16
     # vector size in bytes, word type is 32-bit
     size = n*4
     # create a driver
     driver = VaddDriver(nextlayer_lib, design_lib)
     # reset accel for 10 cycles
     driver.reset(10)
-    # write a and b vector to mem
-    for x in range(8):
+    # write vector a
+    for x in range(n):
         driver.write_mem(x, x)
+    # write vector b
+    for x in range(n):
+        driver.write_mem(x, x+n)
     # write pointer a addr
     driver.write_reg_a(0)
     # write pointer b addr
@@ -26,8 +29,8 @@ def test_vadd(nextlayer_lib, design_lib):
     driver.launch()
     # cycle counter
     cycles = 0
-    # run accel, timeout set to 1000 cycles
-    for i in range(1000):
+    # run accel, timeout set to 100000 cycles
+    for i in range(100000):
         cycles += 1
         driver.run(1)
         if driver.is_finished():
