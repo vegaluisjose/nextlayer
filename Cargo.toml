@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 libloading = "0.6.2"
+vast = { git = "https://github.com/vegaluisjose/vast.git" }
 
 [lib]
 name = "nextlayer"
