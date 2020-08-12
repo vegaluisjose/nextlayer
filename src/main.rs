@@ -27,8 +27,7 @@ fn bit(var: &str, bit: u32) -> Expr {
 fn mask_slice(var: &str, mask: &str) -> Expr {
     let width = 32;
     let lo = Expr::new_mul(Expr::new_int(width), Expr::new_ref(mask));
-    let hi = Expr::new_add(Expr::new_int(width - 1), lo.clone());
-    Expr::new_slice(var, hi, lo)
+    Expr::new_index_slice(var, lo, width as u32)
 }
 
 fn mask_check(mask: &str, width: u32) -> Sequential {
