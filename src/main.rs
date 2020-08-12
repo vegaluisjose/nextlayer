@@ -47,21 +47,21 @@ fn clear_var(var: &str, width: u32) -> Sequential {
     Sequential::new_blk_assign(Expr::new_ref(var), Expr::new_ulit_dec(width, "0"))
 }
 
-fn read_path(var: &str, width: u32, path: &str) -> Sequential {
+fn read_path(var: &str, width: u32, path: Expr) -> Sequential {
     assert!(width > 0, "Error: width must be greater than zero");
     if width > 1 {
-        Sequential::new_blk_assign(slice(var, width - 1, 0), Expr::new_ipath(path))
+        Sequential::new_blk_assign(slice(var, width - 1, 0), path)
     } else {
-        Sequential::new_blk_assign(bit(var, width - 1), Expr::new_ipath(path))
+        Sequential::new_blk_assign(bit(var, width - 1), path)
     }
 }
 
-fn write_path(var: &str, width: u32, path: &str) -> Sequential {
+fn write_path(var: &str, width: u32, path: Expr) -> Sequential {
     assert!(width > 0, "Error: width must be greater than zero");
     if width > 1 {
-        Sequential::new_blk_assign(Expr::new_ipath(path), slice(var, width - 1, 0))
+        Sequential::new_blk_assign(path, slice(var, width - 1, 0))
     } else {
-        Sequential::new_blk_assign(Expr::new_ipath(path), bit(var, width - 1))
+        Sequential::new_blk_assign(path, bit(var, width - 1))
     }
 }
 
@@ -71,13 +71,14 @@ fn return_mask(var: &str, mask: &str) -> Sequential {
 
 fn func_write_reg(id: u32, width: u32, path: &str) -> Function {
     let name = format!("write_reg_{}", id);
+    let path = Expr::new_ipath(path);
     let mut func = Function::new(&name, Ty::Void);
     func.add_input("value", 32);
     func.add_input("mask", 32);
     func.add_logic("tmp", round_to_chunk(width) as u64);
     func.add_stmt(mask_check("mask", width));
     func.add_stmt(clear_var("tmp", width));
-    func.add_stmt(read_path("tmp", width, path));
+    func.add_stmt(read_path("tmp", width, path.clone()));
     func.add_stmt(write_mask("tmp", "mask", "value"));
     func.add_stmt(write_path("tmp", width, path));
     func
@@ -85,7 +86,52 @@ fn func_write_reg(id: u32, width: u32, path: &str) -> Function {
 
 fn func_read_reg(id: u32, width: u32, path: &str) -> Function {
     let name = format!("read_reg_{}", id);
+    let path = Expr::new_ipath(path);
     let mut func = Function::new(&name, Ty::Int);
+    func.add_input("mask", 32);
+    func.add_logic("tmp", 32);
+    func.add_stmt(mask_check("mask", width));
+    func.add_stmt(clear_var("tmp", width));
+    func.add_stmt(read_path("tmp", width, path));
+    func.add_stmt(return_mask("tmp", "mask"));
+    func
+}
+
+// function void write_mem_0;
+// input int value;
+// input int addr;
+// input int mask;
+// logic [32-1:0] tmp;
+// begin
+//     assert (mask < 1) else $error("mask out of bounds");
+//     tmp[0+:32] = 0;
+//     tmp[0+:32] = testbench.dut.ram.mem[addr];
+//     tmp[mask*32+:32] = value;
+//     testbench.dut.ram.mem[addr] = tmp[0+:32];
+// end
+// endfunction
+
+fn func_write_mem(id: u32, width: u32, path: &str) -> Function {
+    let name = format!("write_mem_{}", id);
+    let path = Expr::new_ipath_with_index(path, "addr");
+    let mut func = Function::new(&name, Ty::Void);
+    func.add_input("value", 32);
+    func.add_input("addr", 32);
+    func.add_input("mask", 32);
+    func.add_logic("tmp", round_to_chunk(width) as u64);
+    func.add_stmt(mask_check("mask", width));
+    func.add_stmt(clear_var("tmp", width));
+    func.add_stmt(read_path("tmp", width, path.clone()));
+    func.add_stmt(write_mask("tmp", "mask", "value"));
+    func.add_stmt(write_path("tmp", width, path));
+    func
+}
+
+fn func_read_mem(id: u32, width: u32, path: &str) -> Function {
+    let name = format!("read_mem_{}", id);
+    let path = Expr::new_ipath_with_index(path, "addr");
+    let mut func = Function::new(&name, Ty::Int);
+    func.add_input("addr", 32);
     func.add_input("mask", 32);
     func.add_logic("tmp", 32);
     func.add_stmt(mask_check("mask", width));
@@ -165,6 +211,8 @@ fn module() -> Module {
         32,
         "testbench.dut.vadd.inst_krnl_vadd_rtl_int.inst_krnl_vadd_control_s_axi.int_length_r",
     ));
+    module.add_function(func_write_mem(0, 32, "testbench.dut.ram.mem"));
+    module.add_function(func_read_mem(0, 32, "testbench.dut.ram.mem"));
     module
 }
 
