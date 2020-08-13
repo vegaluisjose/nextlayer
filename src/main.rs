@@ -175,6 +175,7 @@ impl Resource {
 #[derive(Clone, Debug)]
 pub struct Interface {
     pub name: String,
+    pub top: String,
     pub registers: Vec<Resource>,
     pub memories: Vec<Resource>,
 }
@@ -183,6 +184,7 @@ impl Default for Interface {
     fn default() -> Interface {
         Interface {
             name: String::new(),
+            top: String::new(),
             registers: Vec::new(),
             memories: Vec::new(),
         }
@@ -190,9 +192,10 @@ impl Default for Interface {
 }
 
 impl Interface {
-    pub fn new(name: &str) -> Interface {
+    pub fn new(top: &str) -> Interface {
         Interface {
-            name: name.to_string(),
+            name: "testbench".to_string(),
+            top: top.to_string(),
             registers: Vec::new(),
             memories: Vec::new(),
         }
@@ -378,6 +381,13 @@ impl Interface {
         always
     }
 
+    pub fn emit_instance(&self) -> Instance {
+        let mut dut = Instance::new("dut", "top");
+        dut.connect("clock", Expr::new_ref("clock"));
+        dut.connect("reset", Expr::new_ref("reset"));
+        dut
+    }
+
     pub fn emit_module(&self) -> Module {
         let mut module = Module::new_with_name(&self.name());
         module.add_input("clock", 1);
@@ -401,12 +411,13 @@ impl Interface {
             module.add_function(func.clone());
         }
         module.add_always_comb(self.emit_always());
+        module.add_instance(self.emit_instance());
         module
     }
 }
 
 fn main() {
-    let mut interface = Interface::new("testbench");
+    let mut interface = Interface::new("top");
     interface.add_register(
         0,
         1,
