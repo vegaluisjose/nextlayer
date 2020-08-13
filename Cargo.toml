@@ -10,4 +10,4 @@ vast = { git = "https://github.com/vegaluisjose/vast.git" }
 
 [lib]
 name = "nextlayer"
-crate-type = ["dylib"]
+crate-type = ["cdylib"]
