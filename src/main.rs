@@ -266,11 +266,39 @@ impl Interface {
         func
     }
 
+    pub fn emit_call_write_reg(&self, id: u32) -> Sequential {
+        let call_id = write_reg_format(id);
+        let params = vec![Expr::new_ref("in"), Expr::new_ref("mask")];
+        Sequential::new_call(Expr::new_call(&call_id, params))
+    }
+
+    pub fn emit_call_read_reg(&self, id: u32) -> Sequential {
+        let call_id = read_reg_format(id);
+        let params = vec![Expr::new_ref("mask")];
+        Sequential::new_blk_assign(Expr::new_ref("out"), Expr::new_call(&call_id, params))
+    }
+
+    pub fn emit_call_write_mem(&self, id: u32) -> Sequential {
+        let call_id = write_mem_format(id);
+        let params = vec![
+            Expr::new_ref("in"),
+            Expr::new_ref("addr"),
+            Expr::new_ref("mask"),
+        ];
+        Sequential::new_call(Expr::new_call(&call_id, params))
+    }
+
+    pub fn emit_call_read_mem(&self, id: u32) -> Sequential {
+        let call_id = read_mem_format(id);
+        let params = vec![Expr::new_ref("addr"), Expr::new_ref("mask")];
+        Sequential::new_blk_assign(Expr::new_ref("out"), Expr::new_call(&call_id, params))
+    }
+
     pub fn emit_case_write_reg(&self) -> Case {
         let mut case = Case::new(Expr::new_ref("id"));
         for reg in self.registers().iter() {
             let mut br = CaseBranch::new(Expr::new_ulit_dec(32, &reg.id().to_string()));
-            br.add_stmt(Sequential::new_display(&write_reg_format(reg.id())));
+            br.add_stmt(self.emit_call_write_reg(reg.id()));
             case.add_branch(br);
         }
         let mut default = CaseDefault::default();
@@ -283,7 +311,7 @@ impl Interface {
         let mut case = Case::new(Expr::new_ref("id"));
         for reg in self.registers().iter() {
             let mut br = CaseBranch::new(Expr::new_ulit_dec(32, &reg.id().to_string()));
-            br.add_stmt(Sequential::new_display(&read_reg_format(reg.id())));
+            br.add_stmt(self.emit_call_read_reg(reg.id()));
             case.add_branch(br);
         }
         let mut default = CaseDefault::default();
@@ -296,7 +324,7 @@ impl Interface {
         let mut case = Case::new(Expr::new_ref("id"));
         for reg in self.memories().iter() {
             let mut br = CaseBranch::new(Expr::new_ulit_dec(32, &reg.id().to_string()));
-            br.add_stmt(Sequential::new_display(&write_mem_format(reg.id())));
+            br.add_stmt(self.emit_call_write_mem(reg.id()));
             case.add_branch(br);
         }
         let mut default = CaseDefault::default();
@@ -309,7 +337,7 @@ impl Interface {
         let mut case = Case::new(Expr::new_ref("id"));
         for reg in self.memories().iter() {
             let mut br = CaseBranch::new(Expr::new_ulit_dec(32, &reg.id().to_string()));
-            br.add_stmt(Sequential::new_display(&read_mem_format(reg.id())));
+            br.add_stmt(self.emit_call_read_mem(reg.id()));
             case.add_branch(br);
         }
         let mut default = CaseDefault::default();
