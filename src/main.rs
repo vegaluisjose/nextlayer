@@ -1,5 +1,25 @@
 use vast::v17::ast::*;
 
+fn path_format(top: &str, dut: &str, path: &str) -> String {
+    format!("{}.{}.{}", top, dut, path)
+}
+
+fn write_reg_format(id: u32) -> String {
+    format!("write_reg_{}", id)
+}
+
+fn read_reg_format(id: u32) -> String {
+    format!("read_reg_{}", id)
+}
+
+fn write_mem_format(id: u32) -> String {
+    format!("write_mem_{}", id)
+}
+
+fn read_mem_format(id: u32) -> String {
+    format!("read_mem_{}", id)
+}
+
 fn round_to_chunk(width: u32) -> u32 {
     if width % 32 == 0 {
         width
@@ -70,9 +90,8 @@ fn return_mask(var: &str, mask: &str) -> Sequential {
 }
 
 fn func_write_reg(id: u32, width: u32, path: &str) -> Function {
-    let name = format!("write_reg_{}", id);
     let path = Expr::new_ipath(path);
-    let mut func = Function::new(&name, Ty::Void);
+    let mut func = Function::new(&write_reg_format(id), Ty::Void);
     func.add_input("value", 32);
     func.add_input("mask", 32);
     func.add_logic("tmp", round_to_chunk(width) as u64);
@@ -85,9 +104,8 @@ fn func_write_reg(id: u32, width: u32, path: &str) -> Function {
 }
 
 fn func_read_reg(id: u32, width: u32, path: &str) -> Function {
-    let name = format!("read_reg_{}", id);
     let path = Expr::new_ipath(path);
-    let mut func = Function::new(&name, Ty::Int);
+    let mut func = Function::new(&read_reg_format(id), Ty::Int);
     func.add_input("mask", 32);
     func.add_logic("tmp", 32);
     func.add_stmt(mask_check("mask", width));
@@ -98,9 +116,8 @@ fn func_read_reg(id: u32, width: u32, path: &str) -> Function {
 }
 
 fn func_write_mem(id: u32, width: u32, path: &str) -> Function {
-    let name = format!("write_mem_{}", id);
     let path = Expr::new_ipath_with_index(path, "addr");
-    let mut func = Function::new(&name, Ty::Void);
+    let mut func = Function::new(&write_mem_format(id), Ty::Void);
     func.add_input("value", 32);
     func.add_input("addr", 32);
     func.add_input("mask", 32);
@@ -114,9 +131,8 @@ fn func_write_mem(id: u32, width: u32, path: &str) -> Function {
 }
 
 fn func_read_mem(id: u32, width: u32, path: &str) -> Function {
-    let name = format!("read_mem_{}", id);
     let path = Expr::new_ipath_with_index(path, "addr");
-    let mut func = Function::new(&name, Ty::Int);
+    let mut func = Function::new(&read_mem_format(id), Ty::Int);
     func.add_input("addr", 32);
     func.add_input("mask", 32);
     func.add_logic("tmp", 32);
@@ -125,10 +141,6 @@ fn func_read_mem(id: u32, width: u32, path: &str) -> Function {
     func.add_stmt(read_path("tmp", width, path));
     func.add_stmt(return_mask("tmp", "mask"));
     func
-}
-
-fn path_format(top: &str, dut: &str, path: &str) -> String {
-    format!("{}.{}.{}", top, dut, path)
 }
 
 #[derive(Clone, Debug)]
@@ -206,6 +218,73 @@ impl Interface {
         &self.memories
     }
 
+    pub fn emit_func_write_reg(&self) -> Vec<Function> {
+        let mut func: Vec<Function> = Vec::new();
+        for reg in self.registers().iter() {
+            func.push(func_write_reg(
+                reg.id(),
+                reg.width(),
+                &path_format(&self.name, "dut", &reg.path()),
+            ));
+        }
+        func
+    }
+
+    pub fn emit_func_read_reg(&self) -> Vec<Function> {
+        let mut func: Vec<Function> = Vec::new();
+        for reg in self.registers().iter() {
+            func.push(func_read_reg(
+                reg.id(),
+                reg.width(),
+                &path_format(&self.name, "dut", &reg.path()),
+            ));
+        }
+        func
+    }
+
+    pub fn emit_func_write_mem(&self) -> Vec<Function> {
+        let mut func: Vec<Function> = Vec::new();
+        for reg in self.memories().iter() {
+            func.push(func_write_mem(
+                reg.id(),
+                reg.width(),
+                &path_format(&self.name, "dut", &reg.path()),
+            ));
+        }
+        func
+    }
+
+    pub fn emit_func_read_mem(&self) -> Vec<Function> {
+        let mut func: Vec<Function> = Vec::new();
+        for reg in self.memories().iter() {
+            func.push(func_read_mem(
+                reg.id(),
+                reg.width(),
+                &path_format(&self.name, "dut", &reg.path()),
+            ));
+        }
+        func
+    }
+
+    pub fn emit_case_write_reg(&self) -> Case {
+        let mut case = Case::new(Expr::new_ref("id"));
+        for reg in self.registers().iter() {
+            let mut br = CaseBranch::new(Expr::new_ulit_dec(32, &reg.id().to_string()));
+            br.add_stmt(Sequential::new_display("write"));
+            case.add_branch(br);
+        }
+        let mut default = CaseDefault::default();
+        default.add_stmt(Sequential::new_error("invalid id"));
+        case.set_default(default);
+        case
+    }
+
+    pub fn emit_always(&self) -> AlwaysComb {
+        let mut always = AlwaysComb::default();
+        always.add_case(self.emit_case_write_reg());
+        always
+    }
+
     pub fn emit_module(&self) -> Module {
         let mut module = Module::new_with_name(&self.name());
         module.add_input("clock", 1);
@@ -216,30 +295,19 @@ impl Interface {
         module.add_input("in", 32);
         module.add_input("addr", 32);
         module.add_output("out", 32);
-        for reg in self.registers().iter() {
-            module.add_function(func_write_reg(
-                reg.id(),
-                reg.width(),
-                &path_format(&self.name, "dut", &reg.path()),
-            ));
-            module.add_function(func_read_reg(
-                reg.id(),
-                reg.width(),
-                &path_format(&self.name, "dut", &reg.path()),
-            ));
+        for func in self.emit_func_write_reg().iter() {
+            module.add_function(func.clone());
         }
-        for mem in self.memories().iter() {
-            module.add_function(func_write_mem(
-                mem.id(),
-                mem.width(),
-                &path_format(&self.name, "dut", &mem.path()),
-            ));
-            module.add_function(func_read_mem(
-                mem.id(),
-                mem.width(),
-                &path_format(&self.name, "dut", &mem.path()),
-            ));
+        for func in self.emit_func_read_reg().iter() {
+            module.add_function(func.clone());
         }
+        for func in self.emit_func_write_mem().iter() {
+            module.add_function(func.clone());
+        }
+        for func in self.emit_func_read_mem().iter() {
+            module.add_function(func.clone());
+        }
+        // module.add_always_comb(self.emit_always());
         module
     }
 }
