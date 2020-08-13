@@ -1,13 +1,5 @@
-[package]
-name = "nextlayer"
-version = "0.1.0"
-authors = ["Luis Vega <vegaluis@cs.washington.edu>"]
-edition = "2018"
-
-[dependencies]
-libloading = "0.6.2"
-vast = { git = "https://github.com/vegaluisjose/vast.git" }
-
-[lib]
-name = "nextlayer"
-crate-type = ["cdylib"]
+[workspace]
+members = [
+    "nextlayer-ffi",
+    "nextlayer"
+]

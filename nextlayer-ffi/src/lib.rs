@@ -1,9 +1,7 @@
-use crate::backend::xsim::Xsim;
+use nextlayer::backend::xsim::Xsim;
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_int};
 use std::path::Path;
-
-pub mod backend;
 
 /// # Safety
 ///

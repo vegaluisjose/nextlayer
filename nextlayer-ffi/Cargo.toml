@@ -1,0 +1,12 @@
+[package]
+name = "nextlayer-ffi"
+version = "0.1.0"
+authors = ["Luis Vega <vegaluis@cs.washington.edu>"]
+edition = "2018"
+
+[dependencies]
+nextlayer = { path = "../nextlayer" }
+
+[lib]
+name = "nextlayer"
+crate-type = ["cdylib"]
