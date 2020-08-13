@@ -47,6 +47,6 @@ def test_vadd(nextlayer_lib, design_lib):
 if __name__ == "__main__":
     cur_dir = path.dirname(path.realpath(__file__))
     nextlayer_lib = path.join(cur_dir, "../target/release/libnextlayer.so")
-    design_lib = path.join(cur_dir, "../designs/vadd/xsim.dir/work.testbench/xsimk.so")
+    design_lib = path.join(cur_dir, "../hw/vadd/xsim.dir/work.testbench/xsimk.so")
     sys.path.append(cur_dir)
     test_vadd(nextlayer_lib, design_lib)
