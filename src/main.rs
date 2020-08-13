@@ -270,7 +270,7 @@ impl Interface {
         let mut case = Case::new(Expr::new_ref("id"));
         for reg in self.registers().iter() {
             let mut br = CaseBranch::new(Expr::new_ulit_dec(32, &reg.id().to_string()));
-            br.add_stmt(Sequential::new_display("write"));
+            br.add_stmt(Sequential::new_display(&write_reg_format(reg.id())));
             case.add_branch(br);
         }
         let mut default = CaseDefault::default();
@@ -279,9 +279,74 @@ impl Interface {
         case
     }
 
+    pub fn emit_case_read_reg(&self) -> Case {
+        let mut case = Case::new(Expr::new_ref("id"));
+        for reg in self.registers().iter() {
+            let mut br = CaseBranch::new(Expr::new_ulit_dec(32, &reg.id().to_string()));
+            br.add_stmt(Sequential::new_display(&read_reg_format(reg.id())));
+            case.add_branch(br);
+        }
+        let mut default = CaseDefault::default();
+        default.add_stmt(Sequential::new_error("invalid id"));
+        case.set_default(default);
+        case
+    }
+
+    pub fn emit_case_write_mem(&self) -> Case {
+        let mut case = Case::new(Expr::new_ref("id"));
+        for reg in self.memories().iter() {
+            let mut br = CaseBranch::new(Expr::new_ulit_dec(32, &reg.id().to_string()));
+            br.add_stmt(Sequential::new_display(&write_mem_format(reg.id())));
+            case.add_branch(br);
+        }
+        let mut default = CaseDefault::default();
+        default.add_stmt(Sequential::new_error("invalid id"));
+        case.set_default(default);
+        case
+    }
+
+    pub fn emit_case_read_mem(&self) -> Case {
+        let mut case = Case::new(Expr::new_ref("id"));
+        for reg in self.memories().iter() {
+            let mut br = CaseBranch::new(Expr::new_ulit_dec(32, &reg.id().to_string()));
+            br.add_stmt(Sequential::new_display(&read_mem_format(reg.id())));
+            case.add_branch(br);
+        }
+        let mut default = CaseDefault::default();
+        default.add_stmt(Sequential::new_error("invalid id"));
+        case.set_default(default);
+        case
+    }
+
+    pub fn emit_case(&self) -> Case {
+        let mut case = Case::new(Expr::new_ref("opcode"));
+        let mut nop = CaseBranch::new(Expr::new_ulit_dec(32, "0"));
+        let mut write_reg = CaseBranch::new(Expr::new_ulit_dec(32, "1"));
+        let mut read_reg = CaseBranch::new(Expr::new_ulit_dec(32, "2"));
+        let mut write_mem = CaseBranch::new(Expr::new_ulit_dec(32, "3"));
+        let mut read_mem = CaseBranch::new(Expr::new_ulit_dec(32, "4"));
+        let mut default = CaseDefault::default();
+        nop.add_stmt(Sequential::new_blk_assign(
+            Expr::new_ref("out"),
+            Expr::new_ulit_hex(32, "deadbeef"),
+        ));
+        write_reg.add_stmt(Sequential::new_case(self.emit_case_write_reg()));
+        read_reg.add_stmt(Sequential::new_case(self.emit_case_read_reg()));
+        write_mem.add_stmt(Sequential::new_case(self.emit_case_write_mem()));
+        read_mem.add_stmt(Sequential::new_case(self.emit_case_read_mem()));
+        default.add_stmt(Sequential::new_error("invalid opcode"));
+        case.add_branch(nop);
+        case.add_branch(write_reg);
+        case.add_branch(read_reg);
+        case.add_branch(write_mem);
+        case.add_branch(read_mem);
+        case.set_default(default);
+        case
+    }
+
     pub fn emit_always(&self) -> AlwaysComb {
         let mut always = AlwaysComb::default();
-        always.add_case(self.emit_case_write_reg());
+        always.add_case(self.emit_case());
         always
     }
 
@@ -307,7 +372,7 @@ impl Interface {
         for func in self.emit_func_read_mem().iter() {
             module.add_function(func.clone());
         }
-        // module.add_always_comb(self.emit_always());
+        module.add_always_comb(self.emit_always());
         module
     }
 }
