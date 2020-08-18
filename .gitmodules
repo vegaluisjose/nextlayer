@@ -1,0 +1,3 @@
+[submodule "3rdparty/incubator-tvm-vta"]
+	path = 3rdparty/incubator-tvm-vta
+	url = https://github.com/apache/incubator-tvm-vta.git
