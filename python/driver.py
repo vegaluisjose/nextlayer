@@ -106,3 +106,31 @@ class VaddDriver:
 
     def read_mem(self, addr):
         return self.lib.read_mem(self.handle, addr, 0, 0)
+
+class FifoDriver:
+    def __init__(self, nextlayer_lib, design_lib):
+        self.lib = CDLL(nextlayer_lib)
+        self.lib.alloc.argtypes = [c_char_p]
+        self.lib.alloc.restype = c_void_p
+        self.lib.run.argtypes = [c_int]
+        self.lib.reset.argtypes = [c_int]
+        self.lib.write_mem.argtypes = [c_void_p, c_int, c_int, c_int, c_int]
+        self.lib.read_mem.argtypes = [c_void_p, c_int, c_int, c_int]
+        self.lib.read_mem.restype = c_int
+        self.lib.dealloc.argtypes = [c_void_p]
+        self.handle = self.lib.alloc(to_bytes(design_lib))
+
+    def __del__(self):
+        self.lib.dealloc(self.handle)
+
+    def reset(self, cycles):
+        self.lib.reset(self.handle, cycles)
+
+    def run(self, cycles):
+        self.lib.run(self.handle, cycles)
+
+    def write_mem(self, value, addr):
+        self.lib.write_mem(self.handle, value, addr, 0, 0)
+
+    def read_mem(self, addr):
+        return self.lib.read_mem(self.handle, addr, 0, 0)
