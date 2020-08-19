@@ -22,11 +22,18 @@ test_fifo:
 	cargo build --release
 	python3 python/test_fifo.py
 
+test_vta_fetch:
+	make -C $(HW_DIR)/vta/fetch
+	ln -sf $(HW_DIR)/vta/fetch/xsim.dir .
+	cargo build --release
+	python3 python/test_vta_fetch.py
+
 clean:
 	make -C $(HW_DIR)/add clean
 	make -C $(HW_DIR)/vadd clean
 	make -C $(HW_DIR)/fifo clean
-	rm xsim.dir
+	make -C $(HW_DIR)/vta/fetch clean
+	-rm xsim.dir
 
 .PHONY: lint
 lint:

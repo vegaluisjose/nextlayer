@@ -101,8 +101,8 @@ module top (
     );
 
     fetch fetch (
-        .ap_clk                  (clock),
-        .ap_rst_n                (~reset),
+        .ap_clk                      (clock),
+        .ap_rst_n                    (~reset),
         // mem port
         .m_axi_ins_port_AWVALID      (axi_awvalid),
         .m_axi_ins_port_AWREADY      (axi_awready),

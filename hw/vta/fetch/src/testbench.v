@@ -25,9 +25,9 @@ module testbench (
         begin
             assert (mask < 1) else $error("mask out of bounds");
             tmp[0+:32] = 0;
-            tmp[0+:32] = testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_insns_V;
+            tmp[0+:1] = testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_ap_start;
             tmp[mask*32+:32] = value;
-            testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_insns_V = tmp[0+:32];
+            testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_ap_start = tmp[0+:1];
         end
     endfunction
 
@@ -37,7 +37,79 @@ module testbench (
         begin
             assert (mask < 1) else $error("mask out of bounds");
             tmp[0+:32] = 0;
+            tmp[0+:1] = testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_ap_start;
+            return tmp[mask*32+:32];
+        end
+    endfunction
+
+    function void write_reg_1;
+        input logic [31:0] value;
+        input logic [31:0] mask;
+        logic [32-1:0] tmp;
+        begin
+            assert (mask < 1) else $error("mask out of bounds");
+            tmp[0+:32] = 0;
+            tmp[0+:1] = testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_ap_done;
+            tmp[mask*32+:32] = value;
+            testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_ap_done = tmp[0+:1];
+        end
+    endfunction
+
+    function int read_reg_1;
+        input int mask;
+        logic [32-1:0] tmp;
+        begin
+            assert (mask < 1) else $error("mask out of bounds");
+            tmp[0+:32] = 0;
+            tmp[0+:1] = testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_ap_done;
+            return tmp[mask*32+:32];
+        end
+    endfunction
+
+    function void write_reg_2;
+        input logic [31:0] value;
+        input logic [31:0] mask;
+        logic [32-1:0] tmp;
+        begin
+            assert (mask < 1) else $error("mask out of bounds");
+            tmp[0+:32] = 0;
             tmp[0+:32] = testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_insns_V;
+            tmp[mask*32+:32] = value;
+            testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_insns_V = tmp[0+:32];
+        end
+    endfunction
+
+    function int read_reg_2;
+        input int mask;
+        logic [32-1:0] tmp;
+        begin
+            assert (mask < 1) else $error("mask out of bounds");
+            tmp[0+:32] = 0;
+            tmp[0+:32] = testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_insns_V;
+            return tmp[mask*32+:32];
+        end
+    endfunction
+
+    function void write_reg_3;
+        input logic [31:0] value;
+        input logic [31:0] mask;
+        logic [32-1:0] tmp;
+        begin
+            assert (mask < 1) else $error("mask out of bounds");
+            tmp[0+:32] = 0;
+            tmp[0+:32] = testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_insn_count;
+            tmp[mask*32+:32] = value;
+            testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_insn_count = tmp[0+:32];
+        end
+    endfunction
+
+    function int read_reg_3;
+        input int mask;
+        logic [32-1:0] tmp;
+        begin
+            assert (mask < 1) else $error("mask out of bounds");
+            tmp[0+:32] = 0;
+            tmp[0+:32] = testbench.dut.fetch.fetch_CONTROL_BUS_s_axi_U.int_insn_count;
             return tmp[mask*32+:32];
         end
     endfunction
@@ -152,12 +224,18 @@ module testbench (
             32'd1 : begin
                 case(id)
                     32'd0 : write_reg_0(in, mask);
+                    32'd1 : write_reg_1(in, mask);
+                    32'd2 : write_reg_2(in, mask);
+                    32'd3 : write_reg_3(in, mask);
                     default : $error("invalid id");
                 endcase
             end
             32'd2 : begin
                 case(id)
                     32'd0 : out = read_reg_0(mask);
+                    32'd1 : out = read_reg_1(mask);
+                    32'd2 : out = read_reg_2(mask);
+                    32'd3 : out = read_reg_3(mask);
                     default : $error("invalid id");
                 endcase
             end

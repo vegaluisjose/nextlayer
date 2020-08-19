@@ -1,10 +1,10 @@
 import sys
 from os import environ, getenv, path
-from driver import VaddDriver
+from driver import FifoDriver
 
 def test_fifo(nextlayer_lib, design_lib):
     # create a driver
-    driver = VaddDriver(nextlayer_lib, design_lib)
+    driver = FifoDriver(nextlayer_lib, design_lib)
     # reset accel for 10 cycles
     driver.reset(10)
     # run for 10 cycles
