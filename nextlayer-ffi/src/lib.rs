@@ -19,7 +19,7 @@ pub unsafe extern "C" fn alloc(lib: *const c_char) -> *mut Xsim {
 ///
 /// This function writes to a register, should be called after allocating
 #[no_mangle]
-pub unsafe extern "C" fn write_reg(handle: *mut Xsim, value: c_int, id: c_int, mask: c_int) {
+pub unsafe extern "C" fn write_reg(handle: *mut Xsim, id: c_int, value: c_int, mask: c_int) {
     let xsim = &mut handle.as_mut().unwrap();
     xsim.poke("opcode", 1);
     xsim.poke("mask", mask as i32);
@@ -47,9 +47,9 @@ pub unsafe extern "C" fn read_reg(handle: *mut Xsim, id: c_int, mask: c_int) -> 
 #[no_mangle]
 pub unsafe extern "C" fn write_mem(
     handle: *mut Xsim,
+    id: c_int,
     value: c_int,
     addr: c_int,
-    id: c_int,
     mask: c_int,
 ) {
     let xsim = &mut handle.as_mut().unwrap();
@@ -65,7 +65,7 @@ pub unsafe extern "C" fn write_mem(
 ///
 /// This function reads from memory, should be called after allocating
 #[no_mangle]
-pub unsafe extern "C" fn read_mem(handle: *mut Xsim, addr: c_int, id: c_int, mask: c_int) -> i32 {
+pub unsafe extern "C" fn read_mem(handle: *mut Xsim, id: c_int, addr: c_int, mask: c_int) -> i32 {
     let xsim = &mut handle.as_mut().unwrap();
     xsim.poke("opcode", 4);
     xsim.poke("mask", mask as i32);

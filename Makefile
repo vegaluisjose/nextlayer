@@ -2,7 +2,7 @@ export LD_LIBRARY_PATH=$(XILINX_VIVADO)/lib/lnx64.o
 
 HW_DIR = $(abspath .)/hw
 
-default: test_add test_vadd test_fifo
+default: test_add test_vadd test_fifo test_vta_fetch
 
 test_add:
 	make -C $(HW_DIR)/add

@@ -29,22 +29,22 @@ class AddDriver:
         self.lib.run(self.handle, cycles)
 
     def write_reg_a(self, value):
-        self.lib.write_reg(self.handle, value, 0, 0)
+        self.lib.write_reg(self.handle, 0, value, 0)
 
     def read_reg_a(self):
         return self.lib.read_reg(self.handle, 0, 0)
 
     def write_reg_y(self, value):
-        self.lib.write_reg(self.handle, value, 1, 0)
+        self.lib.write_reg(self.handle, 1, value, 0)
 
     def read_reg_y(self):
         return self.lib.read_reg(self.handle, 1, 0)
 
     def write_mem(self, value, addr):
-        self.lib.write_mem(self.handle, value, addr, 0, 0)
+        self.lib.write_mem(self.handle, 0, value, addr, 0)
 
     def read_mem(self, addr):
-        return self.lib.read_mem(self.handle, addr, 0, 0)
+        return self.lib.read_mem(self.handle, 0, addr, 0)
 
 class VaddDriver:
     def __init__(self, nextlayer_lib, design_lib):
@@ -72,40 +72,40 @@ class VaddDriver:
         self.lib.run(self.handle, cycles)
 
     def launch(self):
-        self.lib.write_reg(self.handle, 1, 0, 0)
+        self.lib.write_reg(self.handle, 0, 1, 0)
 
     def is_finished(self):
         return self.lib.read_reg(self.handle, 1, 0)
 
     def write_reg_a(self, value):
-        self.lib.write_reg(self.handle, value, 2, 0)
+        self.lib.write_reg(self.handle, 2, value, 0)
 
     def read_reg_a(self):
         return self.lib.read_reg(self.handle, 2, 0)
 
     def write_reg_b(self, value):
-        self.lib.write_reg(self.handle, value, 3, 0)
+        self.lib.write_reg(self.handle, 3, value, 0)
 
     def read_reg_b(self):
         return self.lib.read_reg(self.handle, 3, 0)
 
     def write_reg_c(self, value):
-        self.lib.write_reg(self.handle, value, 4, 0)
+        self.lib.write_reg(self.handle, 4, value, 0)
 
     def read_reg_c(self):
         return self.lib.read_reg(self.handle, 4, 0)
 
     def write_reg_length(self, value):
-        self.lib.write_reg(self.handle, value, 5, 0)
+        self.lib.write_reg(self.handle, 5, value, 0)
 
     def read_reg_length(self):
         return self.lib.read_reg(self.handle, 5, 0)
 
     def write_mem(self, value, addr):
-        self.lib.write_mem(self.handle, value, addr, 0, 0)
+        self.lib.write_mem(self.handle, 0, value, addr, 0)
 
     def read_mem(self, addr):
-        return self.lib.read_mem(self.handle, addr, 0, 0)
+        return self.lib.read_mem(self.handle, 0, addr, 0)
 
 class FifoDriver:
     def __init__(self, nextlayer_lib, design_lib):
@@ -130,10 +130,10 @@ class FifoDriver:
         self.lib.run(self.handle, cycles)
 
     def write_mem(self, value, addr):
-        self.lib.write_mem(self.handle, value, addr, 0, 0)
+        self.lib.write_mem(self.handle, 0, value, addr, 0)
 
     def read_mem(self, addr):
-        return self.lib.read_mem(self.handle, addr, 0, 0)
+        return self.lib.read_mem(self.handle, 0, addr, 0)
 
 class FetchDriver:
     def __init__(self, nextlayer_lib, design_lib):
@@ -163,43 +163,43 @@ class FetchDriver:
         self.lib.run(self.handle, 1)
 
     def launch(self):
-        self.lib.write_reg(self.handle, 1, 0, 0)
+        self.lib.write_reg(self.handle, 0, 1, 0)
 
     def is_finished(self):
         return self.lib.read_reg(self.handle, 1, 0)
 
     def write_instr_addr(self, value):
-        self.lib.write_reg(self.handle, value, 2, 0)
+        self.lib.write_reg(self.handle, 2, value, 0)
 
     def read_instr_addr(self):
         return self.lib.read_reg(self.handle, 2, 0)
 
     def write_instr_count(self, value):
-        self.lib.write_reg(self.handle, value, 3, 0)
+        self.lib.write_reg(self.handle, 3, value, 0)
 
     def read_instr_count(self):
         return self.lib.read_reg(self.handle, 3, 0)
 
     def write_instr_mem(self, value, addr):
-        self.lib.write_mem(self.handle, value, addr, 0, 0)
+        self.lib.write_mem(self.handle, 0, value, addr, 0)
 
     def read_instr_mem(self, addr):
-        return self.lib.read_mem(self.handle, addr, 0, 0)
+        return self.lib.read_mem(self.handle, 0, addr, 0)
 
     def write_load_mem(self, value, addr):
-        self.lib.write_mem(self.handle, value, addr, 1, 0)
+        self.lib.write_mem(self.handle, 1, value, addr, 0)
 
     def read_load_mem(self, addr):
-        return self.lib.read_mem(self.handle, addr, 1, 0)
+        return self.lib.read_mem(self.handle, 1, addr, 0)
 
     def write_gemm_mem(self, value, addr):
-        self.lib.write_mem(self.handle, value, addr, 2, 0)
+        self.lib.write_mem(self.handle, 2, value, addr, 0)
 
     def read_gemm_mem(self, addr):
-        return self.lib.read_mem(self.handle, addr, 2, 0)
+        return self.lib.read_mem(self.handle, 2, addr, 0)
 
     def write_store_mem(self, value, addr):
-        self.lib.write_mem(self.handle, value, addr, 3, 0)
+        self.lib.write_mem(self.handle, 3, value, addr, 0)
 
     def read_store_mem(self, addr):
-        return self.lib.read_mem(self.handle, addr, 3, 0)
+        return self.lib.read_mem(self.handle, 3, addr, 0)
