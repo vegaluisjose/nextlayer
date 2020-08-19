@@ -1,11 +1,18 @@
 
 from collections import OrderedDict
 
+def round(width: int) -> int:
+    if width % 8 == 0:
+        return int(width/8)
+    else:
+        return int(width/8) + 1
+
 class Field():
     def __init__(self, name: str, width: int) -> None:
         self.name = name
         self.width = width
-        self.value = 0
+        self.value = [0] * round(width)
+        self.check()
 
     def get_width(self) -> int:
         return self.width
@@ -13,8 +20,8 @@ class Field():
     def get_name(self) -> str:
         return self.name
 
-    def get_value(self) -> int:
-        return self.value
+    def get_value(self, offset: int) -> int:
+        return self.value[offset]
 
     def set_width(self, width: int) -> None:
         self.width = width
@@ -23,8 +30,7 @@ class Field():
         self.name = name
 
     def set_value(self, value: int, offset: int) -> None:
-        mask = (1 << 32) - 1
-        self.value |= (value & mask) < offset/8
+        self.value[offset] |= value
 
     def check(self) -> None:
         assert self.width > 0, "width must be greater than zero"
