@@ -413,7 +413,7 @@ impl Interface {
     }
 
     pub fn emit_module(&self) -> Module {
-        let mut module = Module::new_with_name(&self.name());
+        let mut module = Module::new(&self.name());
         module.add_input("clock", 1);
         module.add_input("reset", 1);
         module.add_input("opcode", 32);
