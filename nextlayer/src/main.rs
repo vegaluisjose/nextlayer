@@ -1,24 +1,9 @@
-use nextlayer::v2::{Interface, Resource, ResourceType};
+use nextlayer::util::read_to_string;
+use nextlayer::v2::Interface;
 
 fn main() {
-    let name = String::from("testbench");
-    let instance = String::from("top");
-    let clock = String::from("clock");
-    let reset = String::from("reset");
-    let kind = ResourceType::Register;
-    let resources = vec![Resource {
-        kind,
-        id: 0,
-        width: 3,
-        path: "a".to_string(),
-    }];
-    let interface = Interface {
-        name,
-        instance,
-        clock,
-        reset,
-        resources,
-    };
+    let contents = read_to_string("examples/basic.toml");
+    let interface: Interface = toml::from_str(&contents).expect("Error: parsing toml");
     println!("{}", toml::to_string(&interface).unwrap());
 }
 

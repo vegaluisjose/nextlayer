@@ -1,0 +1,10 @@
+name = "testbench"
+instance = "top"
+clock = "clock"
+reset = "reset"
+
+[[resources]]
+kind = "register"
+id = 0
+width = 3
+path = "a"
