@@ -42,7 +42,7 @@ fn slice(var: &str, hi: u32, lo: u32) -> Expr {
 }
 
 fn bit(var: &str, bit: u32) -> Expr {
-    Expr::new_bit(var, bit as i32)
+    Expr::new_index_bit(var, bit as i32)
 }
 
 fn mask_slice(var: &str, mask: &str) -> Expr {
