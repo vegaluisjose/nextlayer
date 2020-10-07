@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use vast::v17::ast::*;
 
 fn path_format(top: &str, dut: &str, path: &str) -> String {
@@ -143,7 +144,7 @@ fn func_read_mem(id: u32, width: u32, path: &str) -> Function {
     func
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Resource {
     pub id: u32,
     pub width: u32,
@@ -172,10 +173,12 @@ impl Resource {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Interface {
     pub name: String,
-    pub top: String,
+    pub instance: String,
+    pub clock: String,
+    pub reset: String,
     pub registers: Vec<Resource>,
     pub memories: Vec<Resource>,
 }
@@ -184,7 +187,9 @@ impl Default for Interface {
     fn default() -> Interface {
         Interface {
             name: String::new(),
-            top: String::new(),
+            instance: String::new(),
+            clock: String::new(),
+            reset: String::new(),
             registers: Vec::new(),
             memories: Vec::new(),
         }
@@ -192,13 +197,20 @@ impl Default for Interface {
 }
 
 impl Interface {
-    pub fn new(top: &str) -> Interface {
-        Interface {
-            name: "testbench".to_string(),
-            top: top.to_string(),
-            registers: Vec::new(),
-            memories: Vec::new(),
-        }
+    pub fn set_name(&mut self, name: &str) {
+        self.name = name.to_string();
+    }
+
+    pub fn set_instance(&mut self, instance: &str) {
+        self.instance = instance.to_string();
+    }
+
+    pub fn set_clock(&mut self, clock: &str) {
+        self.clock = clock.to_string();
+    }
+
+    pub fn set_reset(&mut self, reset: &str) {
+        self.reset = reset.to_string();
     }
 
     pub fn add_register(&mut self, id: u32, width: u32, path: &str) {
@@ -211,6 +223,18 @@ impl Interface {
 
     pub fn name(&self) -> String {
         self.name.to_string()
+    }
+
+    pub fn instance(&self) -> String {
+        self.instance.to_string()
+    }
+
+    pub fn clock(&self) -> String {
+        self.clock.to_string()
+    }
+
+    pub fn reset(&self) -> String {
+        self.reset.to_string()
     }
 
     pub fn registers(&self) -> &Vec<Resource> {
