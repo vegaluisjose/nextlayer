@@ -22,5 +22,6 @@ pub struct Interface {
     pub instance: String,
     pub clock: String,
     pub reset: String,
+    #[serde(rename = "resource")]
     pub resources: Vec<Resource>,
 }

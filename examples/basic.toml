@@ -3,8 +3,14 @@ instance = "top"
 clock = "clock"
 reset = "reset"
 
-[[resources]]
+[[resource]]
 kind = "register"
 id = 0
+width = 3
+path = "a"
+
+[[resource]]
+kind = "memory"
+id = 1
 width = 3
 path = "a"
