@@ -6,6 +6,6 @@ edition = "2018"
 
 [dependencies]
 libloading = "0.6.2"
-vast = { git = "https://github.com/vegaluisjose/vast.git" }
+vast = { git = "https://github.com/vegaluisjose/vast.git", rev = "09f2f6e" }
 toml = "0.5.6"
 serde = { version = "1.0", features = ["derive"] }
