@@ -1,19 +1,23 @@
-use nextlayer::interface::{Interface, Resource};
+use nextlayer::v2::{Interface, Resource, ResourceType};
 
 fn main() {
     let name = String::from("testbench");
     let instance = String::from("top");
     let clock = String::from("clock");
     let reset = String::from("reset");
-    let registers = vec![Resource::new(0, 32, "a")];
-    let memories = vec![Resource::new(0, 32, "mem")];
+    let kind = ResourceType::Register;
+    let resources = vec![Resource {
+        kind,
+        id: 0,
+        width: 3,
+        path: "a".to_string(),
+    }];
     let interface = Interface {
         name,
         instance,
         clock,
         reset,
-        registers,
-        memories,
+        resources,
     };
     println!("{}", toml::to_string(&interface).unwrap());
 }
